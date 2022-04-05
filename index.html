@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="style.css" rel="stylesheet" type="text/css">
+    <script src="jquery-3.6.0.min.js"></script>
+    <script src="layer/layer.js"></script>
+</head>
+<body>
+
+<div class="win win-off">
+    <div class="wrapper"></div>
+</div>
+<audio id="bombMusic">
+    <source src="bomb.mp3" type="audio/mp3">
+</audio>
+<audio id="winMusic">
+    <source src="win.mp3" type="audio/mp3">
+</audio>
+<script>
+
+    var config = {
+        length:20,
+        visitedCount:0,
+        bombCount:50,
+        allCount:0,
+        blockArray:null,
+        triggerArray:null,
+    }
+
+    function init() {
+        var ii = layer.load(1, {
+            shade: [0.4, '#3260a4'] //0.1透明度的白色背景
+        });
+        $('.wrapper').html('');
+        config.visitedCount = 0;
+        var length = config.length;
+        var bombCount = config.bombCount;
+        var ints = initArray(length);
+        initBomb(length, ints, bombCount);
+        initTips(length, ints);
+
+        console.log(ints);
+
+        config.blockArray = ints;
+        config.triggerArray = initArray(length);
+        config.allCount = config.length * config.length
+
+        for (var i = 0; i < config.length; i++) {
+            var a = $('<div class="wrapper-line"></div>');
+            for (var j = 0; j < config.length; j++) {
+                $(a).append('<div class="default block" i="' + i + '" j="' + j + '"></div>');
+            }
+            $('.wrapper').append(a);
+        }
+        layer.close(ii);
+    }
+
+    function initArray(length) {
+        var ints = [];
+        for (var i = 0; i < length; i++) {
+            var b = [];
+            for (var j = 0; j < length; j++) {
+                b[j] = 0;
+            }
+            ints[i] = b;
+        }
+        return ints;
+    }
+
+
+    function initBomb(length, ints, count) {
+        var visited = initArray(length);
+        while (count > 0) {
+            var i = Math.floor((Math.random() * length));
+            var j = Math.floor((Math.random() * length));
+            if (visited[i][j] == 0) {
+                visited[i][j] = 1;
+                ints[i][j] = 9;
+                count--;
+            }
+        }
+    }
+
+    function initTips(length, ints) {
+        for (var i = 0; i < length; i++) {
+            for (var j = 0; j < length; j++) {
+                if (ints[i][j] != 9) {
+                    initTip(i, j, ints, length);
+                }
+            }
+        }
+    }
+
+    function initTip(i, j, ints, length) {
+        var iUp = i - 1;
+        var iDown = i + 1;
+        var jRight = j + 1;
+        var jLeft = j - 1;
+        var count = 0;
+        if (iUp >= 0) {
+            if (jLeft >= 0) {
+                if (ints[iUp][jLeft] == 9) {
+                    count++;
+                }
+            }
+            if (ints[iUp][j] == 9) {
+                count++;
+            }
+            if (jRight < length) {
+                if (ints[iUp][jRight] == 9) {
+                    count++;
+                }
+            }
+        }
+        if (iDown < length) {
+            if (jLeft >= 0) {
+                if (ints[iDown][jLeft] == 9) {
+                    count++;
+                }
+            }
+            if (ints[iDown][j] == 9) {
+                count++;
+            }
+            if (jRight < length) {
+                if (ints[iDown][jRight] == 9) {
+                    count++;
+                }
+            }
+        }
+        if (jLeft >= 0) {
+            if (ints[i][jLeft] == 9) {
+                count++;
+            }
+        }
+        if (jRight < length) {
+            if (ints[i][jRight] == 9) {
+                count++;
+            }
+        }
+        ints[i][j] = count;
+    }
+
+    function win() {
+        var audio = document.getElementById("winMusic");
+        audio.play();
+        // $('.win').addClass("win-on");
+        var i = layer.alert('YOU WIN!', {
+            skin: 'layui-layer-molv' //样式类名
+            ,closeBtn: 0
+            ,anim: 4
+            ,title:'WIN'
+        }, function(){
+            init()
+            layer.close(i)
+            // $('.win').removeClass("win-on");
+        });
+    }
+
+
+    function lose() {
+        var i = layer.alert(
+            'GAME OVER!!', {
+                skin: 'layui-layer-lan' //样式类名
+                ,closeBtn: 0
+                ,title:'lose'
+            }, function(){
+                init()
+                layer.close(i)
+            })
+    }
+
+    function triggerLinkedEmptyBlock(i,j){
+        i = parseInt(i);
+        j = parseInt(j);
+        var iUp = i - 1;
+        var iDown = i + 1;
+        var jRight = j + 1;
+        var jLeft = j - 1;
+        config.triggerArray[i][j] = 1;
+
+        var next = [];
+
+        if (iUp >= 0) {
+            if (jLeft >= 0 && config.triggerArray[iUp][jLeft] == 0) {
+                config.triggerArray[iUp][jLeft] = 1;
+                next.push([iUp,jLeft]);
+            }
+            if (config.triggerArray[iUp][j] == 0) {
+                config.triggerArray[iUp][j] = 1;
+                next.push([iUp,j]);
+            }
+            if (jRight < config.length  && config.triggerArray[iUp][jRight] == 0) {
+                config.triggerArray[iUp][jRight] = 1;
+                next.push([iUp,jRight]);
+            }
+        }
+        if (iDown < config.length) {
+            if (jLeft >= 0 && config.triggerArray[iDown][jLeft] == 0) {
+                config.triggerArray[iDown][jLeft] = 1;
+                next.push([iDown,jLeft]);
+            }
+            if (config.triggerArray[iDown][j] == 0) {
+                config.triggerArray[iDown][j] = 1;
+                next.push([iDown,j]);
+            }
+            if (jRight < config.length && config.triggerArray[iDown][jRight] == 0) {
+                config.triggerArray[iDown][jRight] = 1;
+                next.push([iDown,jRight]);
+            }
+        }
+        if (jLeft >= 0 && config.triggerArray[i][jLeft] == 0) {
+            config.triggerArray[i][jLeft] = 1;
+            next.push([i,jLeft]);
+        }
+        if (jRight < config.length && config.triggerArray[i][jRight] == 0) {
+            config.triggerArray[i][jRight] = 1;
+            next.push([i,jRight]);
+        }
+
+        $.each(next,function (index,item) {
+            $('.default[i=' + item[0] + '][j=' + item[1] + ']').click();
+        })
+    }
+
+    $(function () {
+
+        //禁止默认的右键
+        $(document).contextmenu(function (e) {
+            e.preventDefault();
+        });
+
+        //砖块左击处理
+        $(document).on('click', '.default', function () {
+            var i = $(this).attr("i");
+            var j = $(this).attr("j");
+
+            var item = config.blockArray[i][j];
+            if (item == 0) {
+                $(this).addClass("empty");
+                $(this).removeClass('bomb-marked')
+                config.visitedCount++;
+                if (config.visitedCount == config.allCount - config.bombCount) {
+                    win()
+                }
+                triggerLinkedEmptyBlock(i,j);
+            } else if (item == 9) {
+                $(this).addClass("bomb");
+                var audio = document.getElementById("bombMusic");
+                audio.play();
+                lose();
+            } else {
+                $(this).addClass("tip");
+                $(this).html(item);
+                config.visitedCount++;
+                if (config.visitedCount == config.allCount - config.bombCount) {
+                    win()
+                }
+            }
+            $(this).removeClass("default");
+        });
+
+        //砖块右击处理
+        $(document).on('contextmenu', '.default', function () {
+            $(this).toggleClass('bomb-marked')
+        });
+
+        init();
+    });
+
+
+</script>
+</body>
+</html>

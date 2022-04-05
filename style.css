@@ -1,0 +1,58 @@
+body {
+    text-align: center;
+}
+.wrapper {
+    display: inline-block;
+    border: 1px solid darkgray;
+}
+.win {
+    display: inline-block;
+    width: 1300px;
+    height: 722px;
+}
+.wrapper-line {
+    height: 22px;
+}
+
+.block {
+    border: 1px solid darkgray;
+    width: 20px;
+    height: 20px;
+    float: left;
+    overflow: hidden;
+    display: -moz-box; /*兼容Firefox*/
+    display: -webkit-box; /*兼容FSafari、Chrome*/
+
+    -moz-box-align: center; /*兼容Firefox*/
+    -webkit-box-align: center; /*兼容FSafari、Chrome */
+
+    -moz-box-pack: center; /*兼容Firefox*/
+    -webkit-box-pack: center; /*兼容FSafari、Chrome */
+}
+
+.bomb {
+    background-image: url("bomb.png");
+    background-size:cover ;
+}
+
+.empty {
+    background-color: darkgray;
+    border: 1px solid darkgray;
+}
+
+.default {
+    background-color: green;
+}
+
+.bomb-marked {
+    background-image: url("flag.png");
+    background-size:cover ;
+}
+
+.default:hover {
+    border: 1px solid black;
+}
+
+.tip {
+    background-color: gray;
+}
